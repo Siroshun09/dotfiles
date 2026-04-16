@@ -1,0 +1,26 @@
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[gui]
+	encoding = utf-8
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
+[init]
+	defaultBranch = main
+[core]
+	autocrlf = input
+[color]
+	ui = true
+[fetch]
+	prune = true
+[rebase]
+	autosquash = true
+	autostash = true
+[pull]
+	rebase = true
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
