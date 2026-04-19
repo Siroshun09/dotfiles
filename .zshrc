@@ -3,6 +3,7 @@ DOTFILE_PATH=$HOME/dotfiles
 export PATH=$HOME/.local/go/bin:$PATH
 export PATH=$HOME/.local/bin:$PATH
 export PATH=$DOTFILE_PATH/scripts/mac/bin:$PATH
+export PATH=$DOTFILE_PATH/scripts/mac/bin.local:$PATH
 
 ###########
 # Options #
