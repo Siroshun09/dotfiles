@@ -21,7 +21,6 @@ HISTFILESIZE=1000
 HISTCONTROL=ignorespace:ignoredups:erasedups
 
 shopt -s histappend
-bind 'set bell-style none'
 
 ##########
 # Prompt #
