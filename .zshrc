@@ -37,6 +37,7 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 ##########
 
 prompt_precmd() {
+  local name="${PROMPT_NAME_PREFIX}"
   local dir="%F{11}%~%f "
   local time="%F{242}%D{%H:%M:%S}%f"
   local next="%F{238}>%f "
@@ -47,7 +48,7 @@ prompt_precmd() {
     git="%{$fg[blue]%}($branch)%{$reset_color%} "
   fi
 
-  PROMPT="${time} ${dir}${git}"$'\n'"${next}"
+  PROMPT="${name}${time} ${dir}${git}"$'\n'"${next}"
 }
 
 autoload -Uz add-zsh-hook

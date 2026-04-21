@@ -34,6 +34,7 @@ prompt_precmd() {
   local color_git='\[\e[34m\]'
   local color_next='\[\e[38;5;238m\]'
 
+  local name="${PROMPT_NAME_PREFIX}"
   local dir="${color_dir}\w${reset} "
   local time="${color_time}\t${reset}"
   local next="${color_next}>${reset} "
@@ -45,7 +46,7 @@ prompt_precmd() {
     git="${color_git}(${branch})${reset} "
   fi
 
-  PS1="${time} ${dir}${git}"$'\n'"${next}"
+  PS1="${name}${time} ${dir}${git}"$'\n'"${next}"
 }
 
 PROMPT_COMMAND="history -a; history -n; prompt_precmd"
