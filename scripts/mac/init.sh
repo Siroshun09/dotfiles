@@ -14,6 +14,6 @@ mkdir -p ~/screenshots
 defaults write com.apple.screencapture location ~/screenshots/
 defaults write com.apple.screencapture type png
 
-cd ~ && ln -s dotfiles/.zshrc .zshrc
-cd ~ && ln -s dotfiles/.wezterm.lua .wezterm.lua
-cd ~ && ln -s dotfiles/.gitconfig .gitconfig
+cd ~ && ln -sfn dotfiles/.zshrc .zshrc
+cd ~ && ln -sfn dotfiles/.wezterm.lua .wezterm.lua
+cd ~ && ln -sfn dotfiles/.gitconfig .gitconfig
