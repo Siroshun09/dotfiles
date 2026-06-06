@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-cd ~ || exit 1
-
 case "$1" in
   claude)
-    ln -sfn dotfiles/genai/custom-prompt.md .claude/CLAUDE.md
+    mkdir -p .claude
+    ln -sfn ~/dotfiles/genai/custom-prompt.md ~/.claude/CLAUDE.md
+    ln -sfn ~/dotfiles/genai/claude/settings.json ~/.claude/settings.json
+    ln -sfn ~/dotfiles/genai/claude/statusline.sh ~/.claude/statusline.sh
     ;;
   codex)
-    ln -sfn dotfiles/genai/custom-prompt.md .codex/AGENTS.md
+    ln -sfn ~/dotfiles/genai/custom-prompt.md .codex/AGENTS.md
     ;;
   *)
     echo "Usage: $0 {claude|codex}" >&2

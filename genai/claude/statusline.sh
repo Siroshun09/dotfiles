@@ -1,0 +1,81 @@
+#!/bin/sh
+# Claude Code status line (single line).
+#
+# Layout:
+#   <dir> (<branch>) [<model>·<effort>] ctx:N%  [5h:N% 7d:N%]  <elapsed>  $<cost>
+#
+# Notes:
+#   * rate_limits (5h / 7d) are sent only for Claude.ai Pro/Max subscribers,
+#     after the first API response. They are absent on usage-based / Enterprise
+#     plans, where the session cost ($) stands in as the usage signal.
+#   * effort is absent when the current model does not support it.
+#   * ctx% / rate% are threshold-colored: green <70, yellow 70-89, red 90+.
+#
+# Portable across macOS / Linux: POSIX sh + jq + git, no absolute paths.
+
+input=$(cat)
+get() { printf '%s' "$input" | jq -r "$1"; }
+
+dir=$(get '.workspace.current_dir // .cwd // ""')
+model=$(get '.model.display_name // ""')
+effort=$(get '.effort.level // empty')
+ctx=$(get '.context_window.used_percentage // empty')
+five=$(get '.rate_limits.five_hour.used_percentage // empty')
+week=$(get '.rate_limits.seven_day.used_percentage // empty')
+cost=$(get '.cost.total_cost_usd // 0')
+dur_ms=$(get '.cost.total_duration_ms // 0')
+
+# Real ESC byte so the rest of the script can concatenate plain strings.
+esc=$(printf '\033')
+DIM="${esc}[90m"; YEL="${esc}[33m"; BLU="${esc}[34m"
+GRN="${esc}[32m"; YLW="${esc}[33m"; RED="${esc}[31m"; RST="${esc}[0m"
+
+# Threshold color for a 0-100 value.
+pct_color() {
+  v=${1%.*}
+  if   [ "${v:-0}" -ge 90 ] 2>/dev/null; then printf '%s' "$RED"
+  elif [ "${v:-0}" -ge 70 ] 2>/dev/null; then printf '%s' "$YLW"
+  else printf '%s' "$GRN"; fi
+}
+
+# Abbreviate the home directory to ~.
+case "$dir" in
+  "$HOME")   disp_dir="~" ;;
+  "$HOME"/*) disp_dir="~${dir#"$HOME"}" ;;
+  *)         disp_dir="$dir" ;;
+esac
+
+# Git branch (silently ignore non-repos / detached HEAD).
+branch=$(git -C "$dir" symbolic-ref --short HEAD 2>/dev/null)
+
+out="${YEL}${disp_dir}${RST}"
+[ -n "$branch" ] && out="$out ${BLU}(${branch})${RST}"
+
+# model · effort
+if [ -n "$model" ]; then
+  [ -n "$effort" ] && label="${model}·${effort}" || label="$model"
+  out="$out ${DIM}[${label}]${RST}"
+fi
+
+# context window usage
+if [ -n "$ctx" ]; then
+  out="$out $(pct_color "$ctx")ctx:$(printf '%.0f' "$ctx")%${RST}"
+fi
+
+# rate limits (Pro/Max only)
+[ -n "$five" ] && out="$out $(pct_color "$five")5h:$(printf '%.0f' "$five")%${RST}"
+[ -n "$week" ] && out="$out $(pct_color "$week")7d:$(printf '%.0f' "$week")%${RST}"
+
+# elapsed wall-clock time
+dur_ms=${dur_ms%.*}
+dur_s=$((dur_ms / 1000))
+if   [ "$dur_s" -ge 3600 ]; then dur_fmt=$(printf '%dh%dm' $((dur_s / 3600)) $(((dur_s % 3600) / 60)))
+elif [ "$dur_s" -ge 60 ];   then dur_fmt=$(printf '%dm' $((dur_s / 60)))
+else dur_fmt=$(printf '%ds' "$dur_s")
+fi
+out="$out ${DIM}${dur_fmt}${RST}"
+
+# session cost
+out="$out ${DIM}\$$(printf '%.2f' "$cost")${RST}"
+
+printf '%s' "$out"

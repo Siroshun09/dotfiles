@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
+  "effortLevel": "high",
+  "language": "japanese",
+  "autoCompactEnabled": false,
+  "env": {
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  },
+  "permissions": {
+    "allow": [
+      "WebFetch"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(*.pem)",
+      "Read(*.key)",
+      "Read(~/.netrc)",
+      "Read(~/.npmrc)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.m2/settings.xml)",
+      "Read(~/.m2/settings-security.xml)",
+      "Read(~/.gradle/gradle.properties)",
+      "Read(~/.zsh_history)",
+      "Read(~/.bash_history)",
+      "Read(~/.claude/.credentials.json)",
+      "Edit(.git/**)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/)",
+      "Bash(sudo rm -rf*)",
+      "Bash(mkfs *)",
+      "Bash(mkfs.*)",
+      "Bash(chmod -R 777 /)",
+      "Bash(chown -R * /)",
+      "Bash(shred *)",
+      "Bash(truncate -s 0*)",
+      "Bash(dd *of=/dev/*)",
+      "Bash(* > /dev/sd*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(git branch -D*)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": ["docker *"],
+    "filesystem": {
+      "allowWrite": [
+        "/tmp",
+        "~/go",
+        "~/Library/Caches/go-build",
+        "~/.cache/go-build",
+        "~/.m2/repository",
+        "~/.gradle"
+      ],
+      "denyRead": [
+        ".env**",
+        "~/.ssh/id_*",
+        "~/.aws",
+        "~/.config/gcloud",
+        "~/.m2/settings.xml",
+        "~/.gradle/gradle.properties",
+        "~/.npmrc",
+        "~/.netrc",
+        "~/.docker/config.json"
+      ]
+    },
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "codeload.github.com",
+        "*.githubusercontent.com",
+        "*.npmjs.org",
+        "repo.maven.apache.org",
+        "*.maven.org",
+        "maven.google.com",
+        "dl.google.com",
+        "*.gradle.org",
+        "proxy.golang.org",
+        "sum.golang.org",
+        "*.googlesource.com",
+        "gopkg.in"
+      ],
+      "deniedDomains": ["uploads.github.com"],
+      "allowLocalBinding": true
+    }
+  }
+}
