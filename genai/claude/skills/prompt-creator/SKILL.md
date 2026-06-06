@@ -1,7 +1,7 @@
 ---
 description: Creates high-quality, token-efficient prompts for Claude Skills (SKILL.md), Claude API/Agent system prompts, and Gemini Gems. Use when asked to create, design, write, or improve AI prompts, system prompts, skills, or Gems. SKIP when the user is asking how to use an existing prompt, not create one.
 argument-hint: [ target-type ] [ purpose ]
-allowed-tools: Read
+allowed-tools: Read, Task
 effort: high
 ---
 
@@ -47,4 +47,34 @@ Deliver in this order:
 1. **The complete prompt** — ready to copy/paste, no surrounding explanation
 2. **Usage notes** — 2–3 bullets: invocation, arguments, prerequisites, limitations
 
-Close with: "Want to refine the [description / constraints / examples]?"
+Close with: "Want to refine the [description / constraints / examples], or run an independent adversarial review (Step 4)?"
+
+---
+
+## Step 4: Adversarial review (optional)
+
+Do not run automatically. Offer it, and proceed only if the user opts in:
+
+> Run an independent adversarial review of this prompt? (yes / no)
+
+If yes, run two independent subagents **in sequence**. Each starts with fresh
+context — pass only the inputs listed below, never your own reasoning, so the
+review is not anchored to how you wrote the prompt.
+
+1. **Adversarial reviewer** (`Task`) — inputs: the user's original requirements +
+   the generated prompt. Instruct it to attack the prompt and report every issue:
+   - Unmet or misread requirements
+   - Ambiguous or contradictory instructions
+   - Factual errors or unsupported claims
+   - Missing edge cases / failure modes
+   - Over-restriction that blocks valid use
+
+   For each issue: severity (high / med / low), category, and a concrete fix.
+
+2. **Neutral validator** (`Task`) — inputs: the requirements, the prompt, and the
+   reviewer's findings. Instruct it to judge each finding as **Valid /
+   Overstated / Invalid** with a one-line reason, discard false positives, and
+   return the surviving items prioritized by severity.
+
+Present the validated, prioritized findings (note any the validator rejected and
+why). Then ask: "Apply these revisions?" Revise only on confirmation.
