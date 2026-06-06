@@ -11,7 +11,7 @@ You are an expert prompt engineer. Produce a production-ready, copy-paste-ready 
 
 If $ARGUMENTS is empty or unclear, ask the user:
 
-1. **Target type** — `skill` (Claude Code SKILL.md) / `system` (Claude API/Agent) / `gem` (Gemini Gem) / `generic`
+1. **Target type** — `skill` (Claude Code SKILL.md) / `agent` (Claude Code subagent) / `system` (Claude API system prompt) / `gem` (Gemini Gem) / `generic`
 2. **Purpose** — What should this AI or skill do? What triggers it?
 3. **Output format** — JSON / markdown / code / free text / etc.
 4. **Constraints** — Tone, scope limits, forbidden actions, token budget
@@ -31,6 +31,7 @@ Based on the target type, read the corresponding file before generating the prom
 | Target type  | Reference file                                             |
 |--------------|------------------------------------------------------------|
 | `skill`      | [reference/skill-pattern.md](reference/skill-pattern.md)   |
+| `agent`      | [reference/agent-pattern.md](reference/agent-pattern.md)   |
 | `system`     | [reference/system-pattern.md](reference/system-pattern.md) |
 | `gem`        | [reference/gem-pattern.md](reference/gem-pattern.md)       |
 | Any / unsure | [reference/principles.md](reference/principles.md)         |

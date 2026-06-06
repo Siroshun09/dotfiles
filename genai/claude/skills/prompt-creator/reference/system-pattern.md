@@ -1,4 +1,4 @@
-# Claude API / Agent System Prompt — Template & Rules
+# System Prompt — Template & Rules
 
 ## Structure rules
 
