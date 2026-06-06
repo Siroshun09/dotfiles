@@ -40,14 +40,15 @@ Read only the file(s) relevant to the requested type. Apply the rules and use th
 
 ---
 
-## Step 3: Output
+## Step 3: Draft
 
-Deliver in this order:
+Present the working draft in this order:
 
-1. **The complete prompt** — ready to copy/paste, no surrounding explanation
+1. **The draft prompt** — complete and copy-paste-ready, no surrounding explanation
 2. **Usage notes** — 2–3 bullets: invocation, arguments, prerequisites, limitations
 
-Close with: "Want to refine the [description / constraints / examples], or run an independent adversarial review (Step 4)?"
+This is a draft, not the final deliverable — Step 5 produces that. Close with:
+"Want to refine the [description / constraints / examples], or run an independent adversarial review (Step 4)?"
 
 ---
 
@@ -78,3 +79,18 @@ review is not anchored to how you wrote the prompt.
 
 Present the validated, prioritized findings (note any the validator rejected and
 why). Then ask: "Apply these revisions?" Revise only on confirmation.
+
+---
+
+## Step 5: Final deliverable
+
+Output the finalized prompt — the Step 3 draft with any confirmed Step 4
+revisions applied (if the review was skipped, the draft is the final version).
+
+Deliver in this order:
+
+1. **The final prompt** — complete and copy-paste-ready, in a single code block, no surrounding explanation
+2. **Usage notes** — invocation, arguments, prerequisites, limitations
+3. **Changelog** — if Step 4 ran: one line per applied revision; otherwise "No review performed."
+
+This is the canonical artifact to copy. Do not re-open the draft afterward unless the user asks for further changes.
