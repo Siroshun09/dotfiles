@@ -53,7 +53,10 @@ table.insert(config.keys, { key = 'RightArrow', mods = 'ALT|SHIFT', action = act
 table.insert(config.keys, { key = 'UpArrow',    mods = 'ALT|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) })
 table.insert(config.keys, { key = 'DownArrow',  mods = 'ALT|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) })
 
-table.insert(config.keys, { key = '-', mods = 'ALT',       action = act.SplitVertical({ domain = 'CurrentPaneDomain' }) })
+table.insert(config.keys, { key = '-', mods = 'ALT|SHIFT',       action = act.SplitVertical({ domain = 'CurrentPaneDomain' }) })
 table.insert(config.keys, { key = '|', mods = 'ALT|SHIFT', action = act.SplitHorizontal({ domain = 'CurrentPaneDomain' }) })
+
+table.insert(config.keys, { key = 'LeftArrow',  mods = 'CMD', action = act.ActivateTabRelative(-1) })
+table.insert(config.keys, { key = 'RightArrow', mods = 'CMD', action = act.ActivateTabRelative(1) })
 
 return config
