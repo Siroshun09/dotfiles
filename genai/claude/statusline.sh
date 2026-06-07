@@ -2,7 +2,7 @@
 # Claude Code status line (single line).
 #
 # Layout:
-#   <dir> (<branch>) [<model>·<effort>] ctx:N%  [5h:N% 7d:N%]  <elapsed>  $<cost>
+#   <dir> (<branch>) [<model>·<effort>] ctx:N%  [5h:<reset>:N% 7d:<reset>:N%]  $<cost>
 #
 # Notes:
 #   * rate_limits (5h / 7d) are sent only for Claude.ai Pro/Max subscribers,
@@ -22,8 +22,9 @@ effort=$(get '.effort.level // empty')
 ctx=$(get '.context_window.used_percentage // empty')
 five=$(get '.rate_limits.five_hour.used_percentage // empty')
 week=$(get '.rate_limits.seven_day.used_percentage // empty')
+five_reset=$(get '.rate_limits.five_hour.resets_at // empty')
+week_reset=$(get '.rate_limits.seven_day.resets_at // empty')
 cost=$(get '.cost.total_cost_usd // 0')
-dur_ms=$(get '.cost.total_duration_ms // 0')
 
 # Real ESC byte so the rest of the script can concatenate plain strings.
 esc=$(printf '\033')
@@ -36,6 +37,16 @@ pct_color() {
   if   [ "${v:-0}" -ge 90 ] 2>/dev/null; then printf '%s' "$RED"
   elif [ "${v:-0}" -ge 70 ] 2>/dev/null; then printf '%s' "$YLW"
   else printf '%s' "$GRN"; fi
+}
+
+# Remaining time until a Unix-epoch reset, compactly formatted (e.g. 2h30m, 3d4h).
+fmt_remaining() {
+  rem=$(( $1 - $(date +%s) ))
+  [ "$rem" -lt 0 ] && rem=0
+  d=$(( rem / 86400 )); h=$(( rem % 86400 / 3600 )); m=$(( rem % 3600 / 60 ))
+  if   [ "$d" -gt 0 ]; then printf '%dd%dh' "$d" "$h"
+  elif [ "$h" -gt 0 ]; then printf '%dh%dm' "$h" "$m"
+  else printf '%dm' "$m"; fi
 }
 
 # Abbreviate the home directory to ~.
@@ -62,18 +73,10 @@ if [ -n "$ctx" ]; then
   out="$out $(pct_color "$ctx")ctx:$(printf '%.0f' "$ctx")%${RST}"
 fi
 
-# rate limits (Pro/Max only)
-[ -n "$five" ] && out="$out $(pct_color "$five")5h:$(printf '%.0f' "$five")%${RST}"
-[ -n "$week" ] && out="$out $(pct_color "$week")7d:$(printf '%.0f' "$week")%${RST}"
-
-# elapsed wall-clock time
-dur_ms=${dur_ms%.*}
-dur_s=$((dur_ms / 1000))
-if   [ "$dur_s" -ge 3600 ]; then dur_fmt=$(printf '%dh%dm' $((dur_s / 3600)) $(((dur_s % 3600) / 60)))
-elif [ "$dur_s" -ge 60 ];   then dur_fmt=$(printf '%dm' $((dur_s / 60)))
-else dur_fmt=$(printf '%ds' "$dur_s")
-fi
-out="$out ${DIM}${dur_fmt}${RST}"
+# rate limits (Pro/Max only) — show time remaining until reset, then usage %;
+# color reflects how much of the limit is consumed.
+[ -n "$five_reset" ] && out="$out $(pct_color "$five")5h:$(fmt_remaining "$five_reset"):$(printf '%.0f' "$five")%${RST}"
+[ -n "$week_reset" ] && out="$out $(pct_color "$week")7d:$(fmt_remaining "$week_reset"):$(printf '%.0f' "$week")%${RST}"
 
 # session cost
 out="$out ${DIM}\$$(printf '%.2f' "$cost")${RST}"
