@@ -59,4 +59,17 @@ table.insert(config.keys, { key = '|', mods = 'ALT|SHIFT', action = act.SplitHor
 table.insert(config.keys, { key = 'LeftArrow',  mods = 'CMD', action = act.ActivateTabRelative(-1) })
 table.insert(config.keys, { key = 'RightArrow', mods = 'CMD', action = act.ActivateTabRelative(1) })
 
+table.insert(config.keys, {
+  key = 't',
+  mods = 'CMD|SHIFT',
+  action = act.PromptInputLine({
+    description = 'Enter tab title',
+    action = wezterm.action_callback(function(window, _, line)
+      if line then
+        window:active_tab():set_title(line)
+      end
+    end),
+  }),
+})
+
 return config
