@@ -1,8 +1,12 @@
 #!/bin/sh
-# Claude Code status line (single line).
+# Claude Code status line.
 #
-# Layout:
+# Layout (single line, default):
 #   <dir> (<branch>) [<model>·<effort>] ctx:N%  [5h:<reset>:N% 7d:<reset>:N%]  $<cost>
+#
+# Layout (two lines, when CLAUDE_STATUSLINE_MULTILINE is set non-empty):
+#   <dir> (<branch>) [<model>·<effort>]
+#   ctx:N%  [5h:<reset>:N% 7d:<reset>:N%]  $<cost>
 #
 # Notes:
 #   * rate_limits (5h / 7d) are sent only for Claude.ai Pro/Max subscribers,
@@ -59,26 +63,39 @@ esac
 # Git branch (silently ignore non-repos / detached HEAD).
 branch=$(git -C "$dir" symbolic-ref --short HEAD 2>/dev/null)
 
-out="${YEL}${disp_dir}${RST}"
-[ -n "$branch" ] && out="$out ${BLU}(${branch})${RST}"
+# Line 1: directory / branch / model · effort.
+line1="${YEL}${disp_dir}${RST}"
+[ -n "$branch" ] && line1="$line1 ${BLU}(${branch})${RST}"
 
 # model · effort
 if [ -n "$model" ]; then
   [ -n "$effort" ] && label="${model}·${effort}" || label="$model"
-  out="$out ${DIM}[${label}]${RST}"
+  line1="$line1 ${DIM}[${label}]${RST}"
 fi
+
+# Line 2: context window / rate limits / session cost.
+line2=""
 
 # context window usage
 if [ -n "$ctx" ]; then
-  out="$out $(pct_color "$ctx")ctx:$(printf '%.0f' "$ctx")%${RST}"
+  line2="$line2 $(pct_color "$ctx")ctx:$(printf '%.0f' "$ctx")%${RST}"
 fi
 
 # rate limits (Pro/Max only) — show time remaining until reset, then usage %;
 # color reflects how much of the limit is consumed.
-[ -n "$five_reset" ] && out="$out $(pct_color "$five")5h:$(fmt_remaining "$five_reset"):$(printf '%.0f' "$five")%${RST}"
-[ -n "$week_reset" ] && out="$out $(pct_color "$week")7d:$(fmt_remaining "$week_reset"):$(printf '%.0f' "$week")%${RST}"
+[ -n "$five_reset" ] && line2="$line2 $(pct_color "$five")5h:$(fmt_remaining "$five_reset"):$(printf '%.0f' "$five")%${RST}"
+[ -n "$week_reset" ] && line2="$line2 $(pct_color "$week")7d:$(fmt_remaining "$week_reset"):$(printf '%.0f' "$week")%${RST}"
 
 # session cost
-out="$out ${DIM}\$$(printf '%.2f' "$cost")${RST}"
+line2="$line2 ${DIM}\$$(printf '%.2f' "$cost")${RST}"
 
-printf '%s' "$out"
+# Trim the single leading space accumulated on line 2.
+line2=${line2# }
+
+# When CLAUDE_STATUSLINE_MULTILINE is set (non-empty), print on two lines;
+# otherwise keep the original single-line layout.
+if [ -n "$CLAUDE_STATUSLINE_MULTILINE" ]; then
+  printf '%s\n%s' "$line1" "$line2"
+else
+  printf '%s %s' "$line1" "$line2"
+fi
