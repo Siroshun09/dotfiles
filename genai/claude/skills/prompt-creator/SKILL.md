@@ -1,7 +1,7 @@
 ---
-description: Creates high-quality, token-efficient prompts for Claude Skills (SKILL.md), Claude API/Agent system prompts, and Gemini Gems. Use when asked to create, design, write, or improve AI prompts, system prompts, skills, or Gems. SKIP when the user is asking how to use an existing prompt, not create one.
+description: Creates high-quality, token-efficient prompts for Claude Skills (SKILL.md), Claude API/Agent system prompts, Claude Code task prompts, and Gemini Gems. Use when asked to create, design, write, or improve AI prompts, system prompts, skills, task prompts, or Gems. SKIP when the user is asking how to use an existing prompt, not create one.
 argument-hint: [ target-type ] [ purpose ]
-allowed-tools: Read, Task
+allowed-tools: Read, Grep, Glob, Task
 effort: high
 ---
 
@@ -11,16 +11,27 @@ You are an expert prompt engineer. Produce a production-ready, copy-paste-ready 
 
 If $ARGUMENTS is empty or unclear, ask the user:
 
-1. **Target type** — `skill` (Claude Code SKILL.md) / `agent` (Claude Code subagent) / `system` (Claude API system prompt) / `gem` (Gemini Gem) / `generic`
+1. **Target type** — `skill` (Claude Code SKILL.md) / `agent` (Claude Code subagent) / `task` (one-shot Claude Code work
+   request) / `system` (Claude API system prompt) / `gem` (Gemini Gem) / `generic`
 2. **Purpose** — What should this AI or skill do? What triggers it?
 3. **Output format** — JSON / markdown / code / free text / etc.
 4. **Constraints** — Tone, scope limits, forbidden actions, token budget
 5. **Examples** — 1–3 input/output pairs (highest consistency ROI — always ask)
 
+For the `task` target type, the goal is required, and additionally establish:
+
+- **Verify** — how success is checked (test / build / run command)
+- **Done when** — the concrete completion condition
+
+Do not ask for these blindly: investigate the repo first (Step 2.5) to fill
+Scope / Context / Verify from what actually exists, then ask only for intent
+investigation cannot reveal. `Output format` and `Examples` rarely apply to `task`.
+
 If $ARGUMENTS contains enough context (e.g., "skill for PR review"), infer what you can and proceed without asking.
 
 If the target type cannot be determined: default to `generic`, note the assumption, and proceed.
-If the user's purpose is still ambiguous after one clarifying exchange: produce a best-effort draft and list your assumptions explicitly.
+If the user's purpose is still ambiguous after one clarifying exchange: produce a best-effort draft and list your
+assumptions explicitly.
 
 ---
 
@@ -32,11 +43,28 @@ Based on the target type, read the corresponding file before generating the prom
 |--------------|------------------------------------------------------------|
 | `skill`      | [reference/skill-pattern.md](reference/skill-pattern.md)   |
 | `agent`      | [reference/agent-pattern.md](reference/agent-pattern.md)   |
+| `task`       | [reference/task-pattern.md](reference/task-pattern.md)     |
 | `system`     | [reference/system-pattern.md](reference/system-pattern.md) |
 | `gem`        | [reference/gem-pattern.md](reference/gem-pattern.md)       |
 | Any / unsure | [reference/principles.md](reference/principles.md)         |
 
 Read only the file(s) relevant to the requested type. Apply the rules and use the templates as the starting point.
+
+---
+
+## Step 2.5: Investigate (task target type only)
+
+Skip this step for every other target type.
+
+Before drafting a task prompt, investigate the repository so the prompt is grounded in reality. Following
+task-pattern.md, use Read/Grep/Glob to determine:
+
+- **Scope** — the actual files/modules the task touches
+- **Verify** — the project's test / build / lint commands (package.json, Makefile, CI config)
+- **Context** — existing patterns and conventions to follow (libraries, structure, naming)
+
+Fill Scope / Context / Verify from the findings. Return to the user only for intent investigation cannot surface:
+completion-condition priorities, hard scope boundaries, and any genuinely ambiguous requirement. Then proceed to Step 3.
 
 ---
 
@@ -64,11 +92,11 @@ review is not anchored to how you wrote the prompt.
 
 1. **Adversarial reviewer** (`Task`) — inputs: the user's original requirements +
    the generated prompt. Instruct it to attack the prompt and report every issue:
-   - Unmet or misread requirements
-   - Ambiguous or contradictory instructions
-   - Factual errors or unsupported claims
-   - Missing edge cases / failure modes
-   - Over-restriction that blocks valid use
+    - Unmet or misread requirements
+    - Ambiguous or contradictory instructions
+    - Factual errors or unsupported claims
+    - Missing edge cases / failure modes
+    - Over-restriction that blocks valid use
 
    For each issue: severity (high / med / low), category, and a concrete fix.
 
