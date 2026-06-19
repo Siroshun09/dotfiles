@@ -63,18 +63,18 @@ esac
 # Git branch (silently ignore non-repos / detached HEAD).
 branch=$(git -C "$dir" symbolic-ref --short HEAD 2>/dev/null)
 
-# Line 1: directory / branch / model · effort.
+# Line 1: directory / branch
 line1="${YEL}${disp_dir}${RST}"
 [ -n "$branch" ] && line1="$line1 ${BLU}(${branch})${RST}"
+
+# Line 2: model · effort / context window / rate limits / session cost.
+line2=""
 
 # model · effort
 if [ -n "$model" ]; then
   [ -n "$effort" ] && label="${model}·${effort}" || label="$model"
-  line1="$line1 ${DIM}[${label}]${RST}"
+  line2="line2 ${DIM}[${label}]${RST}"
 fi
-
-# Line 2: context window / rate limits / session cost.
-line2=""
 
 # context window usage
 if [ -n "$ctx" ]; then
