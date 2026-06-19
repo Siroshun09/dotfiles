@@ -73,7 +73,7 @@ line2=""
 # model · effort
 if [ -n "$model" ]; then
   [ -n "$effort" ] && label="${model}·${effort}" || label="$model"
-  line2="line2 ${DIM}[${label}]${RST}"
+  line2="$line2 ${DIM}[${label}]${RST}"
 fi
 
 # context window usage
