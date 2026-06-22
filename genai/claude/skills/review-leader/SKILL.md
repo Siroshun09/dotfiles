@@ -2,7 +2,7 @@
 description: Adversarial multi-perspective code review. Use to deeply review local branch changes or a GitHub PR by fanning out one skeptical reviewer subagent per perspective, adjudicating findings with a neutral arbiter, then reporting (with optional inline PR comments). Trigger phrases - "review-leader", "multi-agent review", "adversarial review", "review my changes / this PR".
 argument-hint: '[pr-number | "local"] [--perspectives <dir>] [--comment]'
 disable-model-invocation: true
-allowed-tools: Task Bash(mkdir:*) Bash(git diff:*) Bash(git merge-base:*) Bash(git symbolic-ref:*) Bash(gh pr diff:*) Bash(gh pr view:*) Bash(gh repo view:*) Read Glob
+allowed-tools: Task Bash(mkdir:*) Bash(git diff:*) Bash(git merge-base:*) Bash(git symbolic-ref:*) Bash(git fetch:*) Bash(git worktree:*) Bash(gh pr diff:*) Bash(gh pr view:*) Bash(gh repo view:*) Read Glob
 ---
 
 You are the **orchestrator** of a multi-agent code review: you collect the diff, fan out
@@ -48,8 +48,14 @@ intermediate variable like `BASE` stays in scope.
 - **PR mode**: `gh pr diff <target> > <RUN_DIR>/diff.patch`; read metadata with
   `gh pr view <target> --json number,headRefOid,baseRefName,headRefName,url` and the repo with
   `gh repo view --json nameWithOwner`. Record `repo`, `prNumber`, and `headSha` (= headRefOid).
+  Then materialize the full PR source at `headSha` in a throwaway worktree so reviewers can read
+  callers and cross-file impact, **without** touching the user's branch or working tree:
+  `git fetch origin pull/<prNumber>/head` then `git worktree add --detach <RUN_DIR>/src <headSha>`.
 
-If the diff is empty, report "no changes to review" and stop.
+Record the **source root** reviewers should read: the repo's working tree in local mode (already at
+the reviewed revision), or `<RUN_DIR>/src` in PR mode.
+
+If the diff is empty, report "no changes to review" and stop (in PR mode, skip the worktree).
 
 ## Step 4 — Enumerate perspectives
 
@@ -60,8 +66,9 @@ directory is missing or empty, say so and stop (suggest `--perspectives <dir>`).
 
 For each perspective file, launch a subagent (general-purpose, model `sonnet`), at most **4
 concurrently** — queue the rest. Build each prompt from the **Reviewer prompt** block below,
-substituting the perspective file's full content and the paths. Each reviewer writes its result
-to `RUN_DIR/reviews/<perspective-basename>.json` and returns only a one-line status.
+substituting the perspective file's full content and the paths; fill `{{SRC_ROOT}}` with the
+source root recorded in Step 3. Each reviewer writes its result to
+`RUN_DIR/reviews/<perspective-basename>.json` and returns only a one-line status.
 
 > **Reviewer prompt** (fill the placeholders):
 >
@@ -74,10 +81,11 @@ to `RUN_DIR/reviews/<perspective-basename>.json` and returns only a one-line sta
 > {{FULL CONTENTS OF THE PERSPECTIVE FILE}}
 > ```
 >
-> The unified diff is at `{{RUN_DIR}}/diff.patch`. Read it first; it is authoritative. The local
-> working tree may not match the reviewed revision (especially in PR mode, where the PR branch may
-> not be checked out), so read surrounding code from the working tree only as corroboration and
-> never let it override the diff. Restrict findings to the changed code and its direct consequences.
+> The unified diff is at `{{RUN_DIR}}/diff.patch`; read it first, it is authoritative. The full
+> source at the reviewed revision is checked out under `{{SRC_ROOT}}` — read surrounding code,
+> callers, and cross-file/side-effect impact from there (not from the repo's live working tree,
+> which may be a different revision). Restrict findings to the changed code and its direct
+> consequences.
 >
 > Give every issue an exact location when one is clear (`file`, `startLine`, `endLine`). Set
 > `side` to `RIGHT` for added/new lines, `LEFT` for removed lines. Set `anchored: true` only if
@@ -189,7 +197,12 @@ your final message so the user can act on them from the Markdown report.
 
 ## Constraints
 
-- You and the reviewers never modify source files; only temp files under `RUN_DIR` are written.
+- You and the reviewers never modify source files; only temp files under `RUN_DIR` are written. The
+  PR-mode worktree at `<RUN_DIR>/src` is a detached, read-only copy and never touches the user's
+  branch, index, or working tree.
+- In PR mode, after reporting, detach the throwaway worktree with
+  `git worktree remove --force <RUN_DIR>/src` so it leaves no entry in `.git/worktrees`; the diff and
+  JSON outputs under `RUN_DIR` remain for inspection.
 - Posting to GitHub is the only outward action and requires explicit user confirmation each run.
 - If the perspectives directory, `gh`, or git context is missing, report what is missing and stop
   rather than guessing.
