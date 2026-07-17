@@ -96,7 +96,8 @@
         "proxy.golang.org",
         "sum.golang.org",
         "*.googlesource.com",
-        "gopkg.in"
+        "gopkg.in",
+        "cdn.playwright.dev"
       ],
       "deniedDomains": ["uploads.github.com"],
       "allowLocalBinding": true
