@@ -62,6 +62,9 @@
         "/tmp",
         "~/go",
         "~/Library/Caches/go-build",
+        "~/Library/pnpm",
+        "~/Library/Caches/pnpm",
+        "~/Library/Caches/ms-playwright",
         "~/.cache/go-build",
         "~/.m2/repository",
         "~/.gradle"
