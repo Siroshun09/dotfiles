@@ -1,17 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "model": "opus",
-  "effortLevel": "high",
-  "tui": "fullscreen",
   "autoCompactEnabled": false,
+  "effortLevel": "high",
   "env": {
     "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
   },
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline.sh",
-    "refreshInterval": 15
-  },
+  "model": "opus",
   "permissions": {
     "allow": [
       "WebFetch"
@@ -54,9 +48,11 @@
     ]
   },
   "sandbox": {
-    "enabled": true,
     "autoAllowBashIfSandboxed": true,
-    "excludedCommands": ["docker *"],
+    "enabled": true,
+    "excludedCommands": [
+      "docker *"
+    ],
     "filesystem": {
       "allowWrite": [
         "/tmp",
@@ -82,6 +78,7 @@
       ]
     },
     "network": {
+      "allowLocalBinding": true,
       "allowedDomains": [
         "github.com",
         "api.github.com",
@@ -99,8 +96,15 @@
         "gopkg.in",
         "cdn.playwright.dev"
       ],
-      "deniedDomains": ["uploads.github.com"],
-      "allowLocalBinding": true
+      "deniedDomains": [
+        "uploads.github.com"
+      ]
     }
-  }
+  },
+  "statusLine": {
+    "command": "bash ~/.claude/statusline.sh",
+    "refreshInterval": 15,
+    "type": "command"
+  },
+  "tui": "fullscreen"
 }
