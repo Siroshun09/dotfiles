@@ -2,15 +2,19 @@
 
 ## Frontmatter fields
 
-| Field                      | Required    | Notes                                                             |
-|----------------------------|-------------|-------------------------------------------------------------------|
-| `description`              | Recommended | Trigger phrases first. ≤1,536 chars with `when_to_use`.           |
-| `argument-hint`            | No          | Shown in autocomplete. e.g. `[filename] [format]`                 |
-| `disable-model-invocation` | No          | `true` for side-effect tasks (deploy, commit, send)               |
-| `context`                  | No          | `fork` to run in isolated subagent                                |
-| `agent`                    | No          | `Explore` / `Plan` / `general-purpose` (requires `context: fork`) |
-| `allowed-tools`            | No          | Pre-approve tools without per-use prompts                         |
-| `effort`                   | No          | `low` / `medium` / `high` / `max`                                 |
+| Field                      | Required    | Notes                                                                            |
+|----------------------------|-------------|----------------------------------------------------------------------------------|
+| `name`                     | No          | Display name. Defaults to the directory name.                                    |
+| `description`              | Recommended | Trigger phrases first. ≤1,536 chars combined with `when_to_use`.                 |
+| `when_to_use`              | No          | Extra trigger phrases / example requests. Appended to `description`.             |
+| `argument-hint`            | No          | Shown in autocomplete. e.g. `[filename] [format]`                                |
+| `disable-model-invocation` | No          | `true` for side-effect tasks (deploy, commit, send)                              |
+| `context`                  | No          | `fork` to run in isolated subagent                                               |
+| `agent`                    | No          | `Explore` / `Plan` / `general-purpose` (requires `context: fork`)                |
+| `background`               | No          | `context: fork` only. `false` waits for the result in this turn. Default `true`. |
+| `allowed-tools`            | No          | Pre-approve tools without per-use prompts. Grant clears next message.            |
+| `model`                    | No          | Model while active. Same values as `/model`, or `inherit`.                       |
+| `effort`                   | No          | `low` / `medium` / `high` / `xhigh` / `max` (depends on model)                   |
 
 ## Body rules
 
@@ -29,13 +33,13 @@ argument-hint: [ arg1 ] [ arg2 ]
 ---
 
 ## Context
-!`[ shell command for live data — remove section if unused ]`
+  !`[ shell command for live data — remove section if unused ]`
 
-## Instructions
-[ Direct, imperative. Number steps if order matters. ]
+  ## Instructions
+  [ Direct, imperative. Number steps if order matters. ]
 
-## Output format
-[ Exact format, length, structure ]
+  ## Output format
+  [ Exact format, length, structure ]
 ```
 
 ## Side-effect task (manual-only)

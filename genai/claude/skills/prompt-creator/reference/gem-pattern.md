@@ -1,45 +1,50 @@
 # Gemini Gem — Template & Rules
 
+A Gem is a saved instruction set in the Gemini app: a name, an instruction body, and optional knowledge files. There are
+no model parameters — everything is prompt text. For the Gemini API (`system_instruction`, `thinking_level`,
+`temperature`), use
+[gemini-api-pattern.md](gemini-api-pattern.md) instead.
+
 ## Structure rules
 
-- Use markdown sections, **not** XML (Gemini responds better to markdown structure)
-- Required sections: Role / Capabilities / Behavior / Output format / Example interactions
-- Include at least one typical interaction and one out-of-scope refusal example
-- State scope and out-of-scope boundaries explicitly
+- Markdown sections. Gemini's docs neither require nor forbid XML; markdown reads cleanly in the plain-text instruction
+  box, so prefer it — but don't claim XML fails.
+- Follow Google's documented four components: **Persona / Task / Context / Format**. You need not use all four, but each
+  one you add strengthens the result.
+- **Task is the one most often missed.** "What the Gem can do" is not the same as
+  "what the Gem should do every time it is invoked". Write both.
+- **Objective constraints only.** Gemini's docs call out relative qualifiers with no measurable definition. Write "3
+  sentences or less", not "concise" / "brief" /
+  "match the complexity of the question".
+- **Gemini is terse by default.** If you want a warm, chatty, or expansive voice, say so explicitly — the model will not
+  supply it on its own.
+- State scope and out-of-scope boundaries explicitly.
 
 ## Full template
 
 ```markdown
 # [Gem Name]
 
-## Role
+## Persona
 
-[1–2 sentences. Who you are and what you specialize in.]
+[Role and how to respond. Gemini answers directly and briefly by default — if you want a warm or conversational voice, instruct it here explicitly.]
 
-## Capabilities
+## Task
 
-- [What you do]
-- [Domain and knowledge scope]
-- [Formats you can produce]
+[What this Gem does or produces on every invocation.]
 
-## Behavior
+## Context
 
-- Tone: [formal / casual / technical]
-- Length: [concise / detailed / match complexity]
-- Uncertainty: [say "I'm not sure" / ask a clarifying question / suggest alternatives]
-- Out of scope: Politely decline and suggest [alternative or redirect]
+[Background it cannot infer: domain, audience, prior decisions, constraints. If knowledge files are attached, say what they are and how to use them.]
 
-## Output format
+## Format
 
-[Default structure for responses — e.g., always start with a summary, then details]
+[Objective constraints only — "3 sentences or less", "a markdown table with columns X and Y", "always open with a one-line summary". Not "concise" / "detailed" / "match complexity".]
 
-## Example interactions
+## Boundaries
 
-**User:** [typical request]
-**You:** [ideal response — show tone, format, scope]
-
-**User:** [out-of-scope request]
-**You:** [polite refusal + redirect to what you can help with]
+- Uncertainty: [ask a clarifying question / state the assumption / say "I'm not sure"]
+- Out of scope: politely decline and suggest [redirect].
 ```
 
 ## Minimal template
@@ -47,17 +52,51 @@
 ```markdown
 # [Gem Name]
 
-## Role
+## Persona
 
 [1–2 sentences.]
 
-## Behavior
+## Task
 
-- Tone: [tone]
-- Out of scope: Politely decline and suggest [redirect].
+[What it does every time.]
 
+## Boundaries
+
+- Out of scope: politely decline and suggest [redirect].
+```
+
+## Optional blocks — add only when the condition applies
+
+**Knowledge files attached.** Gems that ignore their uploaded documents are a common complaint; an explicit grounding
+clause is Google's documented remedy.
+
+```markdown
+Rely only on facts stated directly in the attached files and in this conversation. Do not fall back on outside knowledge
+or general reasoning to fill gaps. If the files do not cover something, say so.
+```
+
+**Time-sensitive subject matter.**
+
+```markdown
+It is currently [year]. For questions that depend on up-to-date information, follow the current date rather than your
+training data.
+```
+
+**Long pasted context in the chat turn** (not the instruction body): put the question *after* the data and anchor it —
+"Based on the preceding information, ...".
+
+**Examples.** Include them only when the output shape is strict and hard to describe in prose. An example fixes the
+length, tone, and structure it encodes, and Gemini over-analyzes prompt scaffolding written for older models. An
+out-of-scope refusal does *not* need an example — the one-line `Boundaries` rule covers it.
+
+```markdown
 ## Example
 
-**User:** [example]
-**You:** [response]
+**User:** [request whose exact output shape matters]
+**You:** [the ideal output — illustrative, not a template to copy verbatim]
 ```
+
+## Authoring aid
+
+The Gem editor has a **"Use Gemini to re-write instructions"** button: write the goal in a sentence or two, expand it,
+then review and cut what the model added that does not change the output. Do not ship the expansion unread.

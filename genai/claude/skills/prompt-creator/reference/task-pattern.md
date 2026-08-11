@@ -1,27 +1,23 @@
 # Claude Code Task Prompt — Template & Rules
 
-A task prompt is a **one-shot work request** pasted into a live Claude Code
-session. It runs once, in the current session, and may rely on the conversation
-and repo state already in context — it is not a reusable, auto-invoked
+A task prompt is a **one-shot work request** pasted into a live Claude Code session. It runs once, in the current
+session, and may rely on the conversation and repo state already in context — it is not a reusable, auto-invoked
 definition.
 
-Claude Code is an autonomous agent with tools (Read, Edit, Bash, Grep, Glob,
-etc.). A good task prompt tells it **what done looks like** and **how to verify**,
-then lets it choose the steps.
+Claude Code is an autonomous agent with tools (Read, Edit, Bash, Grep, Glob, etc.). A good task prompt tells it **what
+done looks like** and **how to verify**, then lets it choose the steps.
 
 ## Investigate first
 
-A task prompt is only as good as its grounding in the actual repo. Before
-drafting, use Read/Grep/Glob to fill these from reality, not assumption:
+A task prompt is only as good as its grounding in the actual repo. Before drafting, use Read/Grep/Glob to fill these
+from reality, not assumption:
 
 - **Scope** — the real files/modules the task touches (don't guess paths).
-- **Verify** — the project's test / build / lint commands (package.json scripts,
-  Makefile, CI config, etc.).
-- **Context** — existing patterns and conventions the work must follow (libraries
-  already in use, structure, naming).
+- **Verify** — the project's test / build / lint commands (package.json scripts, Makefile, CI config, etc.).
+- **Context** — existing patterns and conventions the work must follow (libraries already in use, structure, naming).
 
-Then ask the user only for intent that investigation cannot reveal: completion
-priorities, hard scope boundaries, and any genuinely ambiguous requirement.
+Then ask the user only for intent that investigation cannot reveal: completion priorities, hard scope boundaries, and
+any genuinely ambiguous requirement.
 
 ## Structure rules
 
@@ -29,7 +25,7 @@ priorities, hard scope boundaries, and any genuinely ambiguous requirement.
 - **Scope explicitly**: name the target files/area, and state what NOT to touch.
 - Give **verification**: the test/build/run command that proves it works.
 - Define **done**: a concrete completion condition, not "improve X".
-- Claude 4.x is literal — state constraints outright; nothing is implied.
+- Claude is literal — state constraints outright; nothing is implied.
 - Add steps only when order is load-bearing; otherwise omit and trust the agent.
 - Markdown headings, not XML — this is a chat message, not an API system prompt.
 
@@ -44,20 +40,24 @@ priorities, hard scope boundaries, and any genuinely ambiguous requirement.
 
 ```markdown
 ## Goal
+
 [ The outcome. "Done" = a specific, observable state. ]
 
 ## Scope
+
 - Target: [ files / module / area ]
 - Out of scope: [ what to leave untouched ]
 
 ## Context
-[ Background the agent can't infer: constraints, prior decisions, the why.
-  Skip anything already visible in the repo or this conversation. ]
+
+[ Background the agent can't infer: constraints, prior decisions, the why. Skip anything already visible in the repo or this conversation. ]
 
 ## Verify
-[ Command(s) that prove success: tests, build, lint, run. ]
+
+[ Command (s) that prove success: tests, build, lint, run. ]
 
 ## Done when
+
 - [ Concrete condition 1 ]
 - [ Concrete condition 2 ]
 ```
@@ -74,8 +74,7 @@ Verify with `[ command ]`. Don't touch [ boundary ].
 ```markdown
 ## Goal
 
-`POST /users` returns 400 with a field-level error when `email` is malformed,
-instead of the current 500.
+`POST /users` returns 400 with a field-level error when `email` is malformed, instead of the current 500.
 
 ## Scope
 
@@ -84,8 +83,7 @@ instead of the current 500.
 
 ## Context
 
-We use zod for request validation elsewhere — follow that pattern, don't add a
-new validation library.
+We use zod for request validation elsewhere — follow that pattern, don't add a new validation library.
 
 ## Verify
 

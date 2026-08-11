@@ -1,7 +1,7 @@
 ---
-description: Creates high-quality, token-efficient prompts for Claude Skills (SKILL.md), Claude API/Agent system prompts, Claude Code task prompts, and Gemini Gems. Use when asked to create, design, write, or improve AI prompts, system prompts, skills, task prompts, or Gems. SKIP when the user is asking how to use an existing prompt, not create one.
+description: Creates high-quality, token-efficient prompts for Claude Skills (SKILL.md), Claude API/Agent system prompts, Claude Code task prompts, Gemini Gems and Gemini API instructions, and ChatGPT Custom GPTs and OpenAI API developer instructions. Use when asked to create, design, write, or improve AI prompts, system prompts, developer instructions, skills, task prompts, Gems, or Custom GPTs. SKIP when the user is asking how to use an existing prompt, not create one.
 argument-hint: [ target-type ] [ purpose ]
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools: Read, Grep, Glob, Agent
 effort: high
 ---
 
@@ -12,26 +12,31 @@ You are an expert prompt engineer. Produce a production-ready, copy-paste-ready 
 If $ARGUMENTS is empty or unclear, ask the user:
 
 1. **Target type** — `skill` (Claude Code SKILL.md) / `agent` (Claude Code subagent) / `task` (one-shot Claude Code work
-   request) / `system` (Claude API system prompt) / `gem` (Gemini Gem) / `generic`
+   request) / `system` (Claude API system prompt) / `gem` (Gemini Gem) / `gemini-api` (Gemini API system instruction) /
+   `custom-gpt` (ChatGPT Custom GPT) / `openai-api` (OpenAI API developer instruction) / `generic`
+
+   The app-level types (`gem`, `custom-gpt`) are prompt text only. The API types (`system`, `gemini-api`, `openai-api`)
+   also let you set request parameters.
 2. **Purpose** — What should this AI or skill do? What triggers it?
 3. **Output format** — JSON / markdown / code / free text / etc.
 4. **Constraints** — Tone, scope limits, forbidden actions, token budget
-5. **Examples** — 1–3 input/output pairs (highest consistency ROI — always ask)
+5. **Target model** — Which model will run this? Prompts are per-model artifacts; if unstated, assume the current
+   flagship and note the assumption.
+6. **Examples** — Ask only if the output shape is format-sensitive. Examples freeze the length, tone, and structure they
+   encode (see principles.md).
 
 For the `task` target type, the goal is required, and additionally establish:
 
 - **Verify** — how success is checked (test / build / run command)
 - **Done when** — the concrete completion condition
 
-Do not ask for these blindly: investigate the repo first (Step 2.5) to fill
-Scope / Context / Verify from what actually exists, then ask only for intent
-investigation cannot reveal. `Output format` and `Examples` rarely apply to `task`.
+Do not ask for these blindly: investigate the repo first (Step 2.5) to fill Scope / Context / Verify from what actually
+exists, then ask only for intent investigation cannot reveal. `Output format` and `Examples` rarely apply to `task`.
 
 If $ARGUMENTS contains enough context (e.g., "skill for PR review"), infer what you can and proceed without asking.
 
-If the target type cannot be determined: default to `generic`, note the assumption, and proceed.
-If the user's purpose is still ambiguous after one clarifying exchange: produce a best-effort draft and list your
-assumptions explicitly.
+If the target type cannot be determined: default to `generic`, note the assumption, and proceed. If the user's purpose
+is still ambiguous after one clarifying exchange: produce a best-effort draft and list your assumptions explicitly.
 
 ---
 
@@ -39,16 +44,19 @@ assumptions explicitly.
 
 Based on the target type, read the corresponding file before generating the prompt:
 
-| Target type  | Reference file                                             |
-|--------------|------------------------------------------------------------|
-| `skill`      | [reference/skill-pattern.md](reference/skill-pattern.md)   |
-| `agent`      | [reference/agent-pattern.md](reference/agent-pattern.md)   |
-| `task`       | [reference/task-pattern.md](reference/task-pattern.md)     |
-| `system`     | [reference/system-pattern.md](reference/system-pattern.md) |
-| `gem`        | [reference/gem-pattern.md](reference/gem-pattern.md)       |
-| Any / unsure | [reference/principles.md](reference/principles.md)         |
+| Target type  | Reference file                                                     |
+|--------------|--------------------------------------------------------------------|
+| `skill`      | [reference/skill-pattern.md](reference/skill-pattern.md)           |
+| `agent`      | [reference/agent-pattern.md](reference/agent-pattern.md)           |
+| `task`       | [reference/task-pattern.md](reference/task-pattern.md)             |
+| `system`     | [reference/system-pattern.md](reference/system-pattern.md)         |
+| `gem`        | [reference/gem-pattern.md](reference/gem-pattern.md)               |
+| `gemini-api` | [reference/gemini-api-pattern.md](reference/gemini-api-pattern.md) |
+| `custom-gpt` | [reference/custom-gpt-pattern.md](reference/custom-gpt-pattern.md) |
+| `openai-api` | [reference/openai-api-pattern.md](reference/openai-api-pattern.md) |
+| Any / unsure | [reference/principles.md](reference/principles.md)                 |
 
-Read only the file(s) relevant to the requested type. Apply the rules and use the templates as the starting point.
+Read only the file (s) relevant to the requested type. Apply the rules and use the templates as the starting point.
 
 ---
 
@@ -86,12 +94,11 @@ Do not run automatically. Offer it, and proceed only if the user opts in:
 
 > Run an independent adversarial review of this prompt? (yes / no)
 
-If yes, run two independent subagents **in sequence**. Each starts with fresh
-context — pass only the inputs listed below, never your own reasoning, so the
-review is not anchored to how you wrote the prompt.
+If yes, run two independent subagents **in sequence**. Each starts with fresh context — pass only the inputs listed
+below, never your own reasoning, so the review is not anchored to how you wrote the prompt.
 
-1. **Adversarial reviewer** (`Task`) — inputs: the user's original requirements +
-   the generated prompt. Instruct it to attack the prompt and report every issue:
+1. **Adversarial reviewer** (`Agent`) — inputs: the user's original requirements + the generated prompt. Instruct it to
+   attack the prompt and report every issue:
     - Unmet or misread requirements
     - Ambiguous or contradictory instructions
     - Factual errors or unsupported claims
@@ -100,20 +107,19 @@ review is not anchored to how you wrote the prompt.
 
    For each issue: severity (high / med / low), category, and a concrete fix.
 
-2. **Neutral validator** (`Task`) — inputs: the requirements, the prompt, and the
-   reviewer's findings. Instruct it to judge each finding as **Valid /
-   Overstated / Invalid** with a one-line reason, discard false positives, and
-   return the surviving items prioritized by severity.
+2. **Neutral validator** (`Agent`) — inputs: the requirements, the prompt, and the reviewer's findings. Instruct it to
+   judge each finding as **Valid / Overstated / Invalid** with a one-line reason, discard false positives, and return
+   the surviving items prioritized by severity.
 
-Present the validated, prioritized findings (note any the validator rejected and
-why). Then ask: "Apply these revisions?" Revise only on confirmation.
+Present the validated, prioritized findings (note any the validator rejected and why). Then ask: "Apply these
+revisions?" Revise only on confirmation.
 
 ---
 
 ## Step 5: Final deliverable
 
-Output the finalized prompt — the Step 3 draft with any confirmed Step 4
-revisions applied (if the review was skipped, the draft is the final version).
+Output the finalized prompt — the Step 3 draft with any confirmed Step 4 revisions applied (if the review was skipped,
+the draft is the final version).
 
 Deliver in this order:
 
