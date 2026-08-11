@@ -10,6 +10,7 @@
     "allow": [
       "WebFetch"
     ],
+    "defaultMode": "auto",
     "deny": [
       "Read(.env)",
       "Read(.env.*)",
